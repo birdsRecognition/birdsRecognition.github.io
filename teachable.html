@@ -29,7 +29,7 @@
         </div>
         <div class="col-3 text-right fadeIn pr-4 pl-0">
             <a href="index.html" class="menu">
-                <i class="fas fa-home"></i><span>Home</span>
+                <i class="fa fa-sign-out"></i><span>Home</span>
             </a>
             <a href="teachable.html" class="menu active mt-2">
                 <i class="fas fa-dove mr-1"></i><span>Início</span>
@@ -43,13 +43,10 @@
     <div class="row application fadeIn1 mt-4">
         <div class="col-6">
             <div id="webcam-container"></div>
-            <button class="btn btn-primary" type="button" onclick="init()">Start</button>
-        </div>
-        <div class="col-3">
-            <div id="label-container"></div>
-        </div>
-        <div class="col-3">
-            <div id="label-container2"></div>
+            <!-- <button class="btn btn-primary" type="button" onclick="init()">Iniciar</button> -->
+        </div>        
+        <div class="col-6 text-center">
+            <div id="label-container" class="p-1 mt-4"></div>
         </div>
     </div>
 
@@ -65,11 +62,12 @@
         // the link to your model provided by Teachable Machine export panel
         const URL = "https://teachablemachine.withgoogle.com/models/8sFdhsXKe/";
 
-        let model, webcam, labelContainer, maxPredictions;
+        let model, input, webcam, labelContainer, maxPredictions;
 
         // Load the image model and setup the webcam
         async function init() {
             const modelURL = URL + "model.json";
+            const imgURL = "./assets/bird.png";
             const metadataURL = URL + "metadata.json";
 
             // load the model and metadata
@@ -77,11 +75,12 @@
             // or files from your local hard drive
             // Note: the pose library adds "tmImage" object to your window (window.tmImage)
             model = await tmImage.load(modelURL, metadataURL);
+            //input = await tmImage.loadFromFiles(imgURL, metadataURL)
             maxPredictions = model.getTotalClasses();
 
             // Convenience function to setup a webcam
             const flip = true; // whether to flip the webcam
-            webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
+            webcam = new tmImage.Webcam(370, 370, flip); // width, height, flip
             await webcam.setup(); // request access to the webcam
             await webcam.play();
             window.requestAnimationFrame(loop);
@@ -110,9 +109,7 @@
                 if(prediction[i].probability.toFixed(2)*100 > 50) {                   
                    labelContainer.childNodes[index].innerHTML = classPrediction;
                    index++
-                }
-                
-                
+                }      
             }
             console.log(prediction[6].probability.toFixed(2)*100)
             //console.log('model', model.getTotalClasses())            
@@ -120,6 +117,7 @@
             // console.log('labelContainer', labelContainer)
             // console.log('maxPredictions', maxPredictions)
         }
+        init();
     </script>
 
 
