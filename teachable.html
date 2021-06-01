@@ -10,7 +10,7 @@
     <!--Import Bootstrap-->
     <link rel="stylesheet" type="text/css"
         href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
+
     <!-- Fontawesome icons -->
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
         integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
@@ -35,19 +35,22 @@
                 <i class="fas fa-dove mr-1"></i><span>Início</span>
             </a>
             <a href="sobre.html" class="menu mt-2"">
-                <i class="fas fa-info-circle"></i><span>Sobre</span>
+                <i class=" fas fa-info-circle"></i><span>Sobre</span>
             </a>
         </div>
     </header>
-    
+
     <div class="row application fadeIn1 mt-4">
         <div class="col-6">
             <div id="webcam-container"></div>
             <!-- <button class="btn btn-primary" type="button" onclick="init()">Iniciar</button> -->
-        </div>        
-        <div class="col-6 text-center">
+        </div>
+        <div class="col-sm-4 col-6 text-center">
             <div id="label-container" class="p-1 mt-4"></div>
         </div>
+        <!-- <div class="col-1">
+            <button class="btn btn-primary" type="button" onclick="alterarLimite()">Expandir</button>
+        </div> -->
     </div>
 
 
@@ -60,39 +63,41 @@
         // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
 
         // the link to your model provided by Teachable Machine export panel
-        const URL = "https://teachablemachine.withgoogle.com/models/8sFdhsXKe/";
+        const URL = "https://teachablemachine.withgoogle.com/models/LEPA-NRWQ/";
 
         let model, input, webcam, labelContainer, maxPredictions;
+
+        let limitado = true;
+
+        function alterarLimite() {
+            limitado = !limitado;
+        }
 
         // Load the image model and setup the webcam
         async function init() {
             const modelURL = URL + "model.json";
             const imgURL = "./assets/bird.png";
             const metadataURL = URL + "metadata.json";
-            let dimensions = document.getElementById("label-container").getBoundingClientRect()
-            
+
 
             // load the model and metadata
             // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
             // or files from your local hard drive
             // Note: the pose library adds "tmImage" object to your window (window.tmImage)
             model = await tmImage.load(modelURL, metadataURL);
-            //input = await tmImage.loadFromFiles(imgURL, metadataURL)
             maxPredictions = model.getTotalClasses();
 
             // Convenience function to setup a webcam
             const flip = true; // whether to flip the webcam
-            if(window.innerWidth < 700) {
+            if (window.innerWidth < 700) {
                 webcam = new tmImage.Webcam(window.innerWidth, window.innerHeight, flip); // width, height, flip
             } else {
                 webcam = new tmImage.Webcam(400, 400, flip); // width, height, flip
             }
-            
+
             await webcam.setup(); // request access to the webcam
             await webcam.play();
             window.requestAnimationFrame(loop);
-
-            console.log('dimenções', window.innerWidth)
 
             // append elements to the DOM
             document.getElementById("webcam-container").appendChild(webcam.canvas);
@@ -114,14 +119,22 @@
             const prediction = await model.predict(webcam.canvas);
             let index = 0
             for (let i = 0; i < maxPredictions; i++) {
-                const classPrediction = prediction[i].className + ": " + prediction[i].probability.toFixed(2)*100 + '%';   
-                if(prediction[i].probability.toFixed(2)*100 > 50) {                   
-                   labelContainer.childNodes[index].innerHTML = classPrediction;
-                   index++
-                }      
+                const classPrediction = prediction[i].className + ": " + prediction[i].probability.toFixed(2) * 100 + '%';
+                if (limitado) {
+                    if (prediction[i].probability.toFixed(2) * 100 > 90) {
+                        labelContainer.childNodes[index].innerHTML = classPrediction;
+                        index++
+                    }
+                } else {
+                    if (prediction[i].probability.toFixed(2) * 100) {
+                        labelContainer.childNodes[i].innerHTML = classPrediction;
+                        
+                    }
+                }
+
             }
-            console.log(prediction[6].probability.toFixed(2)*100)
-            //console.log('model', model.getTotalClasses())            
+            //console.log(prediction[6].probability.toFixed(2) * 100)
+            console.log('model', model.getTotalClasses())
             // console.log('webcam', webcam)
             // console.log('labelContainer', labelContainer)
             // console.log('maxPredictions', maxPredictions)
