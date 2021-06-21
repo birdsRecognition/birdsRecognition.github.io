@@ -48,7 +48,7 @@
         <div class="col-sm-6 col-12 text-center position-absolute" style="right: 5%;">
             <div id="label-container" class="p-1 ml-3 mt-4"></div>
         </div>
-        
+
     </div>
 
 
@@ -71,8 +71,24 @@
             limitado = !limitado;
         }
 
+        const speak = (word) => {
+            const voices = window.speechSynthesis?.getVoices()
+            const ptVoice = voices?.find((voice) => /pt-BR/.test(voice.lang))
+            const voice = ptVoice || voices?.[0]
+
+            const utterance = new SpeechSynthesisUtterance()
+            utterance.text = word
+            utterance.lang = 'pt-BR'
+            utterance.voice = voice
+            utterance.rate = 0.8
+
+            window.speechSynthesis.speak(utterance)
+        }
+
+
         // Load the image model and setup the webcam
         async function init() {
+
             const modelURL = URL + "model.json";
             const imgURL = "./assets/bird.png";
             const metadataURL = URL + "metadata.json";
@@ -106,7 +122,7 @@
         }
 
         async function loop() {
-            webcam.update(); // update the webcam frame
+            webcam.update(); // update the webcam frame            
             await predict();
             window.requestAnimationFrame(loop);
         }
@@ -118,21 +134,27 @@
             let index = 0
             for (let i = 0; i < maxPredictions; i++) {
                 const classPrediction = prediction[i].className + ": " + prediction[i].probability.toFixed(2) * 100 + '%';
+                const wordClass = document.getElementById("label-container").childNodes[0].innerHTML.split(':')
+                const word = wordClass[0]
                 if (limitado) {
                     if (prediction[i].probability.toFixed(2) * 100 > 90) {
                         labelContainer.childNodes[index].innerHTML = classPrediction;
                         index++
+                        const classPredictionClass = classPrediction.split(':')
+                        const classPredictionFiltered = classPredictionClass[0]
+                        if (classPredictionFiltered !== word) {
+                            speak(classPrediction)
+                        }                        
                     }
                 } else {
                     if (prediction[i].probability.toFixed(2) * 100) {
                         labelContainer.childNodes[i].innerHTML = classPrediction;
-                        
                     }
                 }
-
             }
+
             //console.log(prediction[6].probability.toFixed(2) * 100)
-            console.log('model', model.getTotalClasses())
+            //console.log('model', model.getTotalClasses())
             // console.log('webcam', webcam)
             // console.log('labelContainer', labelContainer)
             // console.log('maxPredictions', maxPredictions)
